@@ -1,0 +1,172 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique identifier for the user" },
+        "email": { "type": "string", "format": "email", "description": "The user's email address" },
+        "displayName": { "type": "string", "description": "The user's display name" },
+        "photoURL": { "type": "string", "description": "The user's profile picture URL" },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "The user's role" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the user account was created" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "A shoe product",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "price": { "type": "number" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "targetAudience": { "type": "string", "enum": ["Men", "Women", "Kids"] },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "sizes": { "type": "array", "items": { "type": "number" } },
+        "rating": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "isNewRelease": { "type": "boolean" },
+        "sellerId": { "type": "string", "description": "UID of the user who listed this product" },
+        "sellerName": { "type": "string" }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "Address": {
+      "title": "Address",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "street": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "zip": { "type": "string" },
+        "isDefault": { "type": "boolean" }
+      },
+      "required": ["street", "city", "zip"]
+    },
+    "PaymentMethod": {
+      "title": "PaymentMethod",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "last4": { "type": "string" },
+        "expiry": { "type": "string" },
+        "brand": { "type": "string" }
+      },
+      "required": ["last4", "expiry"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string", "enum": ["info", "warning", "success"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["content", "type"]
+    },
+    "Discount": {
+      "title": "Discount",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "percentage": { "type": "number" },
+        "active": { "type": "boolean" },
+        "usageLimit": { "type": "number" },
+        "usedCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["code", "percentage"]
+    },
+    "Order": {
+      "title": "Order",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "total"]
+    },
+    "Review": {
+      "title": "Review",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "userId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["productId", "userId", "rating", "comment"]
+    },
+    "WishlistItem": {
+      "title": "WishlistItem",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["productId", "createdAt"]
+    },
+    "PlatformSettings": {
+      "title": "PlatformSettings",
+      "type": "object",
+      "properties": {
+        "sellerFeePercentage": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data"
+    },
+    "/users/{userId}/addresses/{addressId}": {
+      "schema": "Address",
+      "description": "User shipping addresses"
+    },
+    "/users/{userId}/payments/{paymentId}": {
+      "schema": "PaymentMethod",
+      "description": "User payment methods"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Product catalog"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Platform announcements"
+    },
+    "/discounts/{discountId}": {
+      "schema": "Discount",
+      "description": "Discount codes"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer orders"
+    },
+    "/products/{productId}/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Product reviews"
+    },
+    "/users/{userId}/wishlist/{wishlistId}": {
+      "schema": "WishlistItem",
+      "description": "User wishlist items"
+    },
+    "/settings/platform": {
+      "schema": "PlatformSettings",
+      "description": "Global platform settings"
+    }
+  }
+}
