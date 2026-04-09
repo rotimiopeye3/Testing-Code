@@ -17,7 +17,7 @@ export function Footer() {
               KICKS.
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Premium footwear designed for the modern athlete. Join our newsletter for early access to drops.
+              Premium products designed for the modern lifestyle. Join our newsletter for early access to drops.
             </p>
             <div className="flex gap-2 max-w-sm">
               <Input placeholder="Email address" className="rounded-full bg-background" />

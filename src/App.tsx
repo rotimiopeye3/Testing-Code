@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Providers from './components/Providers';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import ScrollToTop from './components/common/ScrollToTop';
 import { CartFlyAnimation } from './components/common/CartFlyAnimation';
 import { SupportWidget } from './components/common/SupportWidget';
 import { useThemeStore } from './store/useThemeStore';
@@ -36,6 +37,7 @@ export default function App() {
   return (
     <Providers>
       <Router>
+        <ScrollToTop />
         <div className="flex min-h-screen flex-col bg-background font-sans antialiased">
           <Navbar />
           <CartFlyAnimation />

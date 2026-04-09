@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore } from '@/store/useCartStore';
 import { useAnimationStore } from '@/store/useAnimationStore';
+import { useWishlist } from '@/hooks/useWishlist';
 
 export interface ProductCardProps {
   product: Product;
@@ -22,6 +23,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
   const [isHovered, setIsHovered] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
   const triggerCartAnimation = useAnimationStore((state) => state.triggerCartAnimation);
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -66,15 +68,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, priority = fa
               Featured
             </Badge>
           )}
-          {product.price < 150 && (
+          {product.rating >= 4.5 && (
             <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-black">
               Best Seller
             </Badge>
           )}
         </div>
 
-        <button className="absolute right-3 top-3 rounded-full bg-white/80 p-2 text-black backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500">
-          <Heart className="h-4 w-4" />
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            toggleWishlist(product.id);
+          }}
+          className={cn(
+            "absolute right-3 top-3 rounded-full p-2 backdrop-blur-sm transition-all hover:scale-110 active:scale-95",
+            isInWishlist(product.id) 
+              ? "bg-primary text-primary-foreground" 
+              : "bg-white/80 text-black hover:bg-white hover:text-red-500"
+          )}
+        >
+          <Heart className={cn("h-4 w-4", isInWishlist(product.id) && "fill-current")} />
         </button>
 
         <AnimatePresence>

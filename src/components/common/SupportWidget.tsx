@@ -21,8 +21,17 @@ export function SupportWidget() {
 
     // Simple bot response simulation
     setTimeout(() => {
-      setChat([...newChat, { role: 'bot' as const, text: "Thanks for your message! An agent will be with you shortly. In the meantime, feel free to browse our latest arrivals." }]);
+      setChat([...newChat, { 
+        role: 'bot' as const, 
+        text: "I've received your message! You can also email me directly at rotimiopeye3@gmail.com for a faster response." 
+      }]);
     }, 1000);
+  };
+
+  const handleEmailDirect = () => {
+    const subject = encodeURIComponent("Support Request from KICKS Store");
+    const body = encodeURIComponent(chat.filter(m => m.role === 'user').map(m => m.text).join('\n\n'));
+    window.location.href = `mailto:rotimiopeye3@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -44,6 +53,14 @@ export function SupportWidget() {
                 </button>
               </div>
               <p className="text-xs font-bold uppercase tracking-widest opacity-80">We usually reply in minutes</p>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="mt-4 w-full rounded-xl text-[10px] font-black uppercase tracking-widest"
+                onClick={handleEmailDirect}
+              >
+                Email Me Directly
+              </Button>
             </div>
 
             {/* Chat Area */}
