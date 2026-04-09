@@ -9,11 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, updateDoc, doc, increment } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { collection, query, where, getDocs, updateDoc, doc, increment, addDoc, Timestamp } from 'firebase/firestore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { items, totalPrice, discountedPrice, coupon, clearCart } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -43,10 +45,38 @@ export default function CheckoutPage() {
 
       // Simulate payment processing delay
       await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Create Order in Firestore
+      if (user) {
+        const sellerIds = Array.from(new Set(items.map(item => item.sellerId).filter(Boolean)));
+        const orderData = {
+          userId: user.uid,
+          customerEmail: user.email,
+          items: items.map(item => ({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            sellerId: item.sellerId || 'system',
+            status: 'awaiting'
+          })),
+          total: total,
+          status: 'pending',
+          sellerIds: sellerIds.length > 0 ? sellerIds : ['system'],
+          createdAt: Timestamp.now(),
+          shippingAddress: {
+            street: (document.getElementById('address') as HTMLInputElement).value,
+            city: (document.getElementById('city') as HTMLInputElement).value,
+            zip: (document.getElementById('zip') as HTMLInputElement).value,
+          }
+        };
+
+        await addDoc(collection(db, 'orders'), orderData);
+      }
       
       clearCart();
       alert('Order placed successfully!');
-      navigate('/');
+      navigate('/orders');
     } catch (error) {
       console.error('Checkout error:', error);
       alert('There was an error processing your order. Please try again.');

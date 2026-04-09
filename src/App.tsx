@@ -15,6 +15,10 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
+import SellDashboardPage from './pages/SellDashboardPage';
+import ListProductPage from './pages/ListProductPage';
+import SettingsPage from './pages/SettingsPage';
+import OrdersPage from './pages/OrdersPage';
 import TermsPage from './pages/TermsPage';
 import AdminPage from './pages/AdminPage';
 
@@ -42,6 +46,10 @@ export default function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/sell" element={<SellDashboardPage />} />
+              <Route path="/sell/list" element={<ListProductPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/admin" element={<AdminPage />} />
               {/* Fallback for 404 */}

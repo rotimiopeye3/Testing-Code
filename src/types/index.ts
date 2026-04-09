@@ -12,9 +12,13 @@ export interface Product {
   rating: number;
   isFeatured?: boolean;
   isNewRelease?: boolean;
+  stock?: number;
+  sellerId?: string;
+  sellerName?: string;
 }
 
 export interface CartItem extends Product {
   selectedSize: number;
   quantity: number;
+  sellerId?: string;
 }

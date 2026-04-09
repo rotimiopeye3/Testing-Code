@@ -66,6 +66,8 @@ export default function ProductDetailPage() {
         <ProductInfo product={product} />
       </div>
 
+      <ProductReviews productId={product.id} />
+
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="mt-24">

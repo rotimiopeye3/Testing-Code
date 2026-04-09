@@ -31,6 +31,7 @@
         "rating": { "type": "number" },
         "isFeatured": { "type": "boolean" },
         "isNewRelease": { "type": "boolean" },
+        "stock": { "type": "number", "description": "Number of items available in stock" },
         "sellerId": { "type": "string", "description": "UID of the user who listed this product" },
         "sellerName": { "type": "string" }
       },
@@ -91,12 +92,26 @@
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
-        "items": { "type": "array" },
+        "items": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productId": { "type": "string" },
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "quantity": { "type": "number" },
+              "sellerId": { "type": "string" },
+              "status": { "type": "string", "enum": ["awaiting", "confirmed", "with_rider", "delivered", "cancelled"] }
+            }
+          }
+        },
         "total": { "type": "number" },
-        "status": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed", "cancelled"] },
+        "sellerIds": { "type": "array", "items": { "type": "string" }, "description": "UIDs of all sellers involved in this order" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "items", "total"]
+      "required": ["userId", "items", "total", "sellerIds"]
     },
     "Review": {
       "title": "Review",

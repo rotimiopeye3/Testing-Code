@@ -98,10 +98,12 @@ service cloud.firestore {
     }
 
     function isValidProduct(data) {
-      return data.keys().hasAll(['id', 'name', 'price']) &&
+      return data.keys().hasAll(['id', 'name', 'price', 'sellerId']) &&
              data.id is string &&
              data.name is string &&
              data.price is number && data.price > 0 &&
+             data.sellerId == request.auth.uid &&
+             (!('stock' in data) || data.stock is number) &&
              (!('targetAudience' in data) || data.targetAudience in ['Men', 'Women', 'Kids']);
     }
 
@@ -122,10 +124,11 @@ service cloud.firestore {
     }
 
     function isValidOrder(data) {
-      return data.keys().hasAll(['userId', 'items', 'total']) &&
+      return data.keys().hasAll(['userId', 'items', 'total', 'sellerIds']) &&
              data.userId == request.auth.uid &&
              data.items is list &&
-             data.total is number && data.total >= 0;
+             data.total is number && data.total >= 0 &&
+             data.sellerIds is list;
     }
 
     // ===============================================================
@@ -151,21 +154,27 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin() || (request.auth.uid in resource.data.sellerIds));
       allow create: if isAuthenticated() && isValidOrder(request.resource.data);
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (isAuthenticated() && (
+        // Allow customer to update (e.g. cancel if pending)
+        (resource.data.userId == request.auth.uid && request.resource.data.status == 'cancelled') ||
+        // Allow seller to update their items' status
+        (request.auth.uid in resource.data.sellerIds)
+      ));
+      allow delete: if isAdmin();
     }
 
     match /products/{productId} {
       allow read: if true;
       allow create: if isAuthenticated() && isValidProduct(request.resource.data);
       allow update: if isAdmin() || (isAuthenticated() && (
-        resource.data.sellerId == request.auth.uid || 
-        resource.data.sellerEmail == request.auth.token.email
+        (resource.data.keys().hasAny(['sellerId']) && resource.data.sellerId == request.auth.uid) || 
+        (resource.data.keys().hasAny(['sellerEmail']) && resource.data.sellerEmail == request.auth.token.email)
       ));
       allow delete: if isAdmin() || (isAuthenticated() && (
-        resource.data.sellerId == request.auth.uid || 
-        resource.data.sellerEmail == request.auth.token.email
+        (resource.data.keys().hasAny(['sellerId']) && resource.data.sellerId == request.auth.uid) || 
+        (resource.data.keys().hasAny(['sellerEmail']) && resource.data.sellerEmail == request.auth.token.email)
       ));
 
       match /reviews/{reviewId} {

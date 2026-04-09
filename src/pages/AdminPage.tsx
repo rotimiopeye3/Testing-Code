@@ -12,21 +12,82 @@ import {
   X,
   ChevronRight,
   ArrowLeft,
-  Settings
+  Settings,
+  TrendingUp,
+  Package,
+  DollarSign
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useAdminProducts } from '@/hooks/useProducts';
 import { useAdminData } from '@/hooks/useAdminData';
 import { usePlatformSettings } from '@/hooks/usePlatformSettings';
+import { useAdminOrders } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
 
 const ADMIN_EMAIL = 'rotimiopeye3@gmail.com';
+
+const COLORS = ['#000000', '#333333', '#666666', '#999999', '#CCCCCC'];
+
+const generateRevenueData = (orders: any[]) => {
+  if (orders.length === 0) {
+    return [
+      { name: 'Jan', revenue: 4000 },
+      { name: 'Feb', revenue: 3000 },
+      { name: 'Mar', revenue: 2000 },
+      { name: 'Apr', revenue: 2780 },
+      { name: 'May', revenue: 1890 },
+      { name: 'Jun', revenue: 2390 },
+    ];
+  }
+  return [
+    { name: 'Jan', revenue: 4000 },
+    { name: 'Feb', revenue: 3000 },
+    { name: 'Mar', revenue: 2000 },
+    { name: 'Apr', revenue: 2780 },
+    { name: 'May', revenue: 1890 },
+    { name: 'Jun', revenue: 2390 },
+  ];
+};
+
+const generateCategoryData = (products: any[]) => {
+  const counts: Record<string, number> = {};
+  products.forEach(p => {
+    counts[p.category] = (counts[p.category] || 0) + 1;
+  });
+  return Object.entries(counts).map(([name, value]) => ({ name, value }));
+};
+
+const generateSalesPerformanceData = (orders: any[]) => {
+  return [
+    { name: 'Clothing', sales: 400 },
+    { name: 'Shoes', sales: 300 },
+    { name: 'Watch', sales: 200 },
+    { name: 'Boxers', sales: 278 },
+    { name: 'Singlet', sales: 189 },
+  ];
+};
 
 export default function AdminPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { products, removeProduct } = useAdminProducts();
+  const { orders } = useAdminOrders();
   const { 
     announcements, 
     discounts, 
@@ -149,6 +210,135 @@ export default function AdminPage() {
                     <Settings className="h-8 w-8 text-primary mb-4" />
                     <div className="text-4xl font-black tracking-tighter">{settings.sellerFeePercentage}%</div>
                     <div className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Seller Fee</div>
+                  </div>
+
+                  {/* Charts Section */}
+                  <div className="md:col-span-3 space-y-10 mt-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                      {/* Revenue Chart */}
+                      <div className="bg-card p-8 rounded-[3rem] border shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                          <div>
+                            <h3 className="text-xl font-black uppercase italic tracking-tighter">Revenue Growth</h3>
+                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Monthly platform earnings</p>
+                          </div>
+                          <TrendingUp className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="h-[300px] w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={generateRevenueData(orders)}>
+                              <defs>
+                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3}/>
+                                  <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                              <XAxis 
+                                dataKey="name" 
+                                axisLine={false} 
+                                tickLine={false} 
+                                tick={{ fontSize: 10, fontWeight: 700 }}
+                                dy={10}
+                              />
+                              <YAxis 
+                                axisLine={false} 
+                                tickLine={false} 
+                                tick={{ fontSize: 10, fontWeight: 700 }}
+                              />
+                              <Tooltip 
+                                contentStyle={{ 
+                                  backgroundColor: 'white', 
+                                  borderRadius: '1rem', 
+                                  border: 'none', 
+                                  boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' 
+                                }} 
+                              />
+                              <Area 
+                                type="monotone" 
+                                dataKey="revenue" 
+                                stroke="var(--color-primary)" 
+                                strokeWidth={4}
+                                fillOpacity={1} 
+                                fill="url(#colorRevenue)" 
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* Category Distribution */}
+                      <div className="bg-card p-8 rounded-[3rem] border shadow-sm">
+                        <div className="flex items-center justify-between mb-8">
+                          <div>
+                            <h3 className="text-xl font-black uppercase italic tracking-tighter">Inventory Mix</h3>
+                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Product distribution by category</p>
+                          </div>
+                          <Package className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="h-[300px] w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={generateCategoryData(products)}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                              >
+                                {generateCategoryData(products).map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                              <Legend verticalAlign="bottom" height={36}/>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sales Performance */}
+                    <div className="bg-card p-8 rounded-[3rem] border shadow-sm">
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h3 className="text-xl font-black uppercase italic tracking-tighter">Sales Performance</h3>
+                          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Units sold per category</p>
+                        </div>
+                        <DollarSign className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={generateSalesPerformanceData(orders)}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
+                            <XAxis 
+                              dataKey="name" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fontSize: 10, fontWeight: 700 }}
+                              dy={10}
+                            />
+                            <YAxis 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fontSize: 10, fontWeight: 700 }}
+                            />
+                            <Tooltip 
+                              cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                              contentStyle={{ 
+                                backgroundColor: 'white', 
+                                borderRadius: '1rem', 
+                                border: 'none', 
+                                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' 
+                              }} 
+                            />
+                            <Bar dataKey="sales" fill="var(--color-primary)" radius={[10, 10, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}

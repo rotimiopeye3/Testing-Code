@@ -32,6 +32,30 @@ export function ProductInfo({ product }: { product: Product }) {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Badges */}
+      <div className="flex flex-wrap gap-2">
+        {product.rating >= 4.5 && (
+          <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20">
+            Best Seller
+          </div>
+        )}
+        {product.isNewRelease && (
+          <div className="bg-secondary text-secondary-foreground px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+            New Release
+          </div>
+        )}
+        {product.stock !== undefined && product.stock <= 5 && product.stock > 0 && (
+          <div className="bg-orange-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse">
+            Low Stock: {product.stock} Left
+          </div>
+        )}
+        {product.stock === 0 && (
+          <div className="bg-destructive text-destructive-foreground px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+            Out of Stock
+          </div>
+        )}
+      </div>
+
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -44,7 +68,17 @@ export function ProductInfo({ product }: { product: Product }) {
         <h1 className="text-4xl font-black uppercase italic leading-none tracking-tighter md:text-5xl text-black">
           {product.name}
         </h1>
-        <p className="text-2xl font-black text-muted-foreground">{formatPrice(product.price)}</p>
+        <div className="flex items-end justify-between">
+          <p className="text-2xl font-black text-muted-foreground">{formatPrice(product.price)}</p>
+          {product.stock !== undefined && (
+            <div className="text-right">
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Availability</p>
+              <p className={cn("font-bold text-sm", product.stock > 0 ? "text-green-500" : "text-destructive")}>
+                {product.stock > 0 ? `${product.stock} In Stock` : 'Out of Stock'}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <p className="text-base leading-relaxed text-muted-foreground">
