@@ -7,23 +7,66 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { ProductReviews } from '@/components/product/ProductReviews';
 import { Product } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { db } from '@/lib/firebase';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
       if (!id) return;
       setIsLoading(true);
-      const p = await getProductById(id);
-      if (p) {
-        setProduct(p);
-        const related = await getRelatedProducts(p.category, p.id);
-        setRelatedProducts(related);
+      
+      try {
+        // Fetch review count
+        const reviewsRef = collection(db, `products/${id}/reviews`);
+        const reviewsSnap = await getDocs(reviewsRef);
+        setReviewCount(reviewsSnap.size);
+
+        // Try Firestore first
+        const docRef = doc(db, 'products', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const p = { ...data, id: docSnap.id } as Product;
+          setProduct(p);
+          try {
+            const related = await getRelatedProducts(p.category, p.id);
+            setRelatedProducts(related);
+          } catch (e) {
+            console.warn("Could not fetch related products:", e);
+            setRelatedProducts([]);
+          }
+        } else {
+          // Fallback to mock data
+          try {
+            const p = await getProductById(id);
+            if (p) {
+              setProduct(p);
+              const related = await getRelatedProducts(p.category, p.id);
+              setRelatedProducts(related);
+            }
+          } catch (e) {
+            console.error("Mock API fallback failed:", e);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        // Fallback to mock data on error
+        const p = await getProductById(id);
+        if (p) {
+          setProduct(p);
+          const related = await getRelatedProducts(p.category, p.id);
+          setRelatedProducts(related);
+        }
       }
+      
       setIsLoading(false);
     };
 
@@ -63,7 +106,7 @@ export default function ProductDetailPage() {
     <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
         <ProductGallery images={product.images} />
-        <ProductInfo product={product} />
+        <ProductInfo product={product} reviewCount={reviewCount} />
       </div>
 
       <ProductReviews productId={product.id} />

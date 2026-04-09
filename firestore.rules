@@ -151,6 +151,10 @@ service cloud.firestore {
       match /wishlist/{wishlistId} {
         allow read, write: if isOwner(userId);
       }
+
+      match /settings/{settingId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     match /orders/{orderId} {

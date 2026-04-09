@@ -17,6 +17,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useUserProducts } from '@/hooks/useProducts';
 import { usePlatformSettings } from '@/hooks/usePlatformSettings';
 import { Button } from '@/components/ui/button';
+import { compressImage } from '@/lib/utils';
 
 export default function ListProductPage() {
   const { user } = useAuthStore();
@@ -48,17 +49,30 @@ export default function ListProductPage() {
     );
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        const compressed = await compressImage(base64);
+        setFormData({ ...formData, image: compressed });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await addProduct({
         ...formData,
-        id: Math.random().toString(36).substr(2, 9),
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         images: [formData.image || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800'],
-        brand: 'User Listed'
+        brand: 'User Listed',
+        sizes: [7, 8, 9, 10, 11, 12] // Default sizes for footwear/clothing
       });
       setIsSuccess(true);
       setTimeout(() => navigate('/sell'), 2000);
@@ -198,15 +212,28 @@ export default function ListProductPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground ml-2">
-                      <Upload className="h-3 w-3" /> Image URL
+                      <Upload className="h-3 w-3" /> Product Image
                     </label>
-                    <input 
-                      required
-                      placeholder="https://images.unsplash.com/..."
-                      className="w-full h-14 bg-card border rounded-2xl px-6 outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
-                      value={formData.image}
-                      onChange={e => setFormData({...formData, image: e.target.value})}
-                    />
+                    <div className="relative group">
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="product-image-upload"
+                        onChange={handleImageUpload}
+                      />
+                      <label 
+                        htmlFor="product-image-upload"
+                        className="flex flex-col items-center justify-center w-full h-14 bg-card border border-dashed rounded-2xl cursor-pointer hover:bg-secondary/50 transition-all"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-bold text-muted-foreground">
+                            {formData.image ? 'Change Image' : 'Upload Image'}
+                          </span>
+                        </div>
+                      </label>
+                    </div>
                   </div>
                 </div>
 

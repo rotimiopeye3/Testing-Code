@@ -11,7 +11,7 @@ import { useAnimationStore } from '@/store/useAnimationStore';
 
 import { useWishlist } from '@/hooks/useWishlist';
 
-export function ProductInfo({ product }: { product: Product }) {
+export function ProductInfo({ product, reviewCount = 0 }: { product: Product, reviewCount?: number }) {
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const addItem = useCartStore((state) => state.addItem);
   const triggerCartAnimation = useAnimationStore((state) => state.triggerCartAnimation);
@@ -62,7 +62,7 @@ export function ProductInfo({ product }: { product: Product }) {
           <p className="text-sm font-bold uppercase tracking-widest text-primary">{product.brand}</p>
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-sm font-bold text-black">{product.rating} (120 Reviews)</span>
+            <span className="text-sm font-bold text-black">{product.rating} ({reviewCount} Reviews)</span>
           </div>
         </div>
         <h1 className="text-4xl font-black uppercase italic leading-none tracking-tighter md:text-5xl text-black">

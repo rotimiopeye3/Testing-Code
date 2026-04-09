@@ -3,13 +3,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Package, Settings, CreditCard, MapPin, LogOut, 
   ChevronRight, RefreshCcw, Truck, ShoppingCart, Plus, Trash2, 
-  ShieldCheck, Store, Tag, Image as ImageIcon, X, ShoppingBag
+  ShieldCheck, Store, Tag, Image as ImageIcon, X, ShoppingBag, Camera
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
-import { logout } from '@/lib/firebase';
+import { logout, auth } from '@/lib/firebase';
 import { useNavigate } from 'react-router-dom';
+import { updateProfile } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, compressImage } from '@/lib/utils';
 import { useCartStore } from '@/store/useCartStore';
 import { useProfileData } from '@/hooks/useProfileData';
 import { useUserProducts, useAdminProducts } from '@/hooks/useProducts';
@@ -24,8 +27,10 @@ const sectionVariants = {
 export default function ProfilePage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const addItem = useCartStore((state) => state.addItem);
-  const [activeTab, setActiveTab] = useState<'orders' | 'settings' | 'admin'>('orders');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
+  const [isEditing, setIsEditing] = useState(false);
   
   const { addresses, payments, addAddress, removeAddress, addPayment, removePayment } = useProfileData();
   const { products: allProducts, removeProduct: adminRemoveProduct } = useAdminProducts();
@@ -43,6 +48,43 @@ export default function ProfilePage() {
     navigate('/');
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        const compressed = await compressImage(base64);
+        setPhotoURL(compressed);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!auth.currentUser) return;
+    setIsUpdating(true);
+    try {
+      await updateProfile(auth.currentUser, { 
+        displayName: displayName.trim(), 
+        photoURL: photoURL 
+      });
+      
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      await updateDoc(userRef, { 
+        displayName: displayName.trim(), 
+        photoURL: photoURL,
+        updatedAt: new Date().toISOString()
+      });
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -54,21 +96,52 @@ export default function ProfilePage() {
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center text-center p-8 rounded-3xl bg-secondary/30 border border-secondary"
           >
-            <div className="relative mb-4">
+            <div className="relative mb-4 group">
               <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
+                src={photoURL || user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
                 alt={user.displayName || 'User'} 
                 className="h-32 w-32 rounded-full object-cover border-4 border-background shadow-xl"
                 referrerPolicy="no-referrer"
               />
+              <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <Camera className="h-6 w-6 text-white" />
+                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+              </label>
               {isAdmin && (
                 <div className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary border-4 border-background flex items-center justify-center">
                   <ShieldCheck className="h-4 w-4 text-background" />
                 </div>
               )}
             </div>
-            <h1 className="text-2xl font-black tracking-tight">{user.displayName}</h1>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+            
+            {isEditing ? (
+              <div className="space-y-3 w-full">
+                <input 
+                  className="w-full h-10 bg-background border rounded-xl px-4 text-center font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  placeholder="Display Name"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 rounded-full" onClick={handleUpdateProfile} disabled={isUpdating}>
+                    {isUpdating ? '...' : 'Save'}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="flex-1 rounded-full" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-black tracking-tight">{user.displayName}</h1>
+                  <button onClick={() => setIsEditing(true)} className="p-1 hover:bg-secondary rounded-full">
+                    <Settings className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </div>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+              </>
+            )}
             
             <Button 
               variant="outline" 
@@ -103,27 +176,7 @@ export default function ProfilePage() {
             </div>
         </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-10 min-h-[600px]">
-          <div className="bg-card border rounded-[3rem] p-12 text-center space-y-6">
-            <div className="bg-secondary h-20 w-20 rounded-full flex items-center justify-center mx-auto">
-              <User className="h-10 w-10 text-muted-foreground" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-black uppercase italic tracking-tighter">Welcome back, {user.displayName}!</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">Manage your orders, settings, and seller profile from the sidebar. Everything you need is just a click away.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-              <Button onClick={() => navigate('/orders')} className="h-14 rounded-2xl font-bold uppercase tracking-widest gap-2">
-                <Package className="h-5 w-5" /> View My Orders
-              </Button>
-              <Button variant="secondary" onClick={() => navigate('/settings')} className="h-14 rounded-2xl font-bold uppercase tracking-widest gap-2">
-                <Settings className="h-5 w-5" /> Account Settings
-              </Button>
-            </div>
-          </div>
-        </div>
-
+        {/* Main Content removed as requested */}
       </div>
     </div>
   );

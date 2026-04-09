@@ -9,7 +9,7 @@ import { useSearchStore } from '@/store/useSearchStore';
 import { useAdminData } from '@/hooks/useAdminData';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Moon, Sun, Search, User, X, Megaphone, ShieldCheck } from 'lucide-react';
+import { Moon, Sun, Search, User, X, Megaphone, ShieldCheck, Heart } from 'lucide-react';
 
 export function Navbar() {
   const { user } = useAuthStore();
@@ -96,6 +96,15 @@ export function Navbar() {
             aria-label="Toggle Theme"
           >
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </button>
+
+          <button 
+            onClick={() => navigate('/wishlist')}
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
+            aria-label="Wishlist"
+            title="Wishlist"
+          >
+            <Heart className="h-5 w-5" />
           </button>
           
           {user ? (

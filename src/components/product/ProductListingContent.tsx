@@ -7,6 +7,8 @@ import { fetchProducts } from '@/lib/mock-api';
 import { ProductCard } from './ProductCard';
 import { ProductSkeleton } from './ProductSkeleton';
 import { useSearchStore } from '@/store/useSearchStore';
+import { db } from '@/lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 import { 
   Select, 
   SelectContent, 
@@ -28,7 +30,45 @@ export function ProductListingContent() {
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products', currentFilters],
-    queryFn: () => fetchProducts(currentFilters),
+    queryFn: async () => {
+      // Fetch from mock API
+      const mockProducts = await fetchProducts(currentFilters);
+      
+      // Fetch from Firestore
+      const firestoreProducts: any[] = [];
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'));
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          firestoreProducts.push({ ...data, id: doc.id });
+        });
+      } catch (error) {
+        console.error("Error fetching firestore products:", error);
+      }
+
+      // Merge and filter
+      const allProducts = [...mockProducts, ...firestoreProducts];
+      
+      // Apply filters manually for firestore products if needed
+      let filtered = allProducts;
+      if (currentFilters.category !== 'All') {
+        filtered = filtered.filter(p => p.category.toLowerCase() === currentFilters.category.toLowerCase());
+      }
+
+      // Apply sorting
+      if (currentFilters.sort === 'price-asc') {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (currentFilters.sort === 'price-desc') {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (currentFilters.sort === 'rating') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else {
+        // newest - assuming mock data is already sorted or we sort by id/date if available
+        // For now just keep as is or sort by a mock date if we had one
+      }
+      
+      return filtered;
+    },
   });
 
   const filteredProducts = products?.filter(p => 

@@ -4,6 +4,7 @@ import Providers from './components/Providers';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { CartFlyAnimation } from './components/common/CartFlyAnimation';
+import { SupportWidget } from './components/common/SupportWidget';
 import { useThemeStore } from './store/useThemeStore';
 import { useEffect } from 'react';
 
@@ -19,6 +20,7 @@ import SellDashboardPage from './pages/SellDashboardPage';
 import ListProductPage from './pages/ListProductPage';
 import SettingsPage from './pages/SettingsPage';
 import OrdersPage from './pages/OrdersPage';
+import WishlistPage from './pages/WishlistPage';
 import TermsPage from './pages/TermsPage';
 import AdminPage from './pages/AdminPage';
 
@@ -37,6 +39,7 @@ export default function App() {
         <div className="flex min-h-screen flex-col bg-background font-sans antialiased">
           <Navbar />
           <CartFlyAnimation />
+          <SupportWidget />
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<LandingPage />} />
@@ -47,6 +50,7 @@ export default function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/sell" element={<SellDashboardPage />} />
               <Route path="/sell/list" element={<ListProductPage />} />

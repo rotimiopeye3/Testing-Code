@@ -179,6 +179,10 @@
       "schema": "WishlistItem",
       "description": "User wishlist items"
     },
+    "/users/{userId}/settings/{settingId}": {
+      "schema": "object",
+      "description": "User-specific settings and preferences"
+    },
     "/settings/platform": {
       "schema": "PlatformSettings",
       "description": "Global platform settings"
