@@ -16,10 +16,9 @@
     },
     "Product": {
       "title": "Product",
-      "description": "A shoe product",
+      "description": "A product listed in the marketplace",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
         "name": { "type": "string" },
         "brand": { "type": "string" },
         "price": { "type": "number" },
@@ -31,11 +30,13 @@
         "rating": { "type": "number" },
         "isFeatured": { "type": "boolean" },
         "isNewRelease": { "type": "boolean" },
-        "stock": { "type": "number", "description": "Number of items available in stock" },
-        "sellerId": { "type": "string", "description": "UID of the user who listed this product" },
-        "sellerName": { "type": "string" }
+        "stock": { "type": "number" },
+        "sellerId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "sellerEmail": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "name", "price"]
+      "required": ["name", "price", "sellerId"]
     },
     "Address": {
       "title": "Address",

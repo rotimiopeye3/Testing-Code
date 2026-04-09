@@ -10,7 +10,9 @@ import {
   FileText,
   CheckCircle2,
   AlertCircle,
-  Package
+  Package,
+  Plus,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -31,7 +33,7 @@ export default function ListProductPage() {
     category: 'Clothing', 
     targetAudience: 'Men',
     description: '',
-    image: '',
+    images: [] as string[],
     stock: '1'
   });
 
@@ -50,16 +52,30 @@ export default function ListProductPage() {
   }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        const compressed = await compressImage(base64);
-        setFormData({ ...formData, image: compressed });
-      };
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files) {
+      const filesArray = Array.from(files);
+      filesArray.forEach((file: File) => {
+        if (formData.images.length >= 4) return;
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64 = reader.result as string;
+          const compressed = await compressImage(base64);
+          setFormData(prev => ({ 
+            ...prev, 
+            images: [...prev.images, compressed].slice(0, 4) 
+          }));
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,7 +86,7 @@ export default function ListProductPage() {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        images: [formData.image || 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800'],
+        images: formData.images.length > 0 ? formData.images : ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800'],
         brand: 'User Listed',
         sizes: [7, 8, 9, 10, 11, 12] // Default sizes for footwear/clothing
       });
@@ -212,27 +228,33 @@ export default function ListProductPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground ml-2">
-                      <Upload className="h-3 w-3" /> Product Image
+                      <Upload className="h-3 w-3" /> Product Images (Max 4)
                     </label>
-                    <div className="relative group">
-                      <input 
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        id="product-image-upload"
-                        onChange={handleImageUpload}
-                      />
-                      <label 
-                        htmlFor="product-image-upload"
-                        className="flex flex-col items-center justify-center w-full h-14 bg-card border border-dashed rounded-2xl cursor-pointer hover:bg-secondary/50 transition-all"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Upload className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-bold text-muted-foreground">
-                            {formData.image ? 'Change Image' : 'Upload Image'}
-                          </span>
+                    <div className="grid grid-cols-4 gap-2">
+                      {formData.images.map((img, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border bg-secondary group">
+                          <img src={img} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          <button 
+                            type="button"
+                            onClick={() => removeImage(idx)}
+                            className="absolute top-1 right-1 bg-destructive text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
                         </div>
-                      </label>
+                      ))}
+                      {formData.images.length < 4 && (
+                        <label className="aspect-square flex flex-col items-center justify-center border border-dashed rounded-xl cursor-pointer hover:bg-secondary/50 transition-all">
+                          <Plus className="h-5 w-5 text-muted-foreground" />
+                          <input 
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={handleImageUpload}
+                          />
+                        </label>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -290,9 +312,9 @@ export default function ListProductPage() {
               {/* Live Preview Card */}
               <div className="bg-card border rounded-[2.5rem] overflow-hidden shadow-sm">
                 <div className="aspect-square bg-secondary relative overflow-hidden">
-                  {formData.image ? (
+                  {formData.images.length > 0 ? (
                     <img 
-                      src={formData.image} 
+                      src={formData.images[0]} 
                       alt="Preview" 
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
