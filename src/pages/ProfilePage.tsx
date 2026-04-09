@@ -176,7 +176,63 @@ export default function ProfilePage() {
             </div>
         </div>
 
-        {/* Main Content removed as requested */}
+        {/* Main Content: Dashboard */}
+        <div className="lg:col-span-2 space-y-12">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-8"
+          >
+            <div className="bg-primary text-primary-foreground p-10 rounded-[3rem] shadow-2xl shadow-primary/20 relative overflow-hidden">
+              <div className="relative z-10">
+                <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-4">
+                  Welcome back, <br /> {user.displayName || 'Friend'}!
+                </h2>
+                <p className="text-primary-foreground/80 font-medium max-w-md">
+                  Manage your orders, track your shipments, and update your preferences all in one place.
+                </p>
+                <div className="mt-8 flex gap-4">
+                  <Button variant="secondary" className="rounded-full px-8" onClick={() => navigate('/products')}>
+                    Start Shopping
+                  </Button>
+                </div>
+              </div>
+              <ShoppingBag className="absolute right-[-20px] bottom-[-20px] h-64 w-64 opacity-10 rotate-12" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-card p-8 rounded-[2.5rem] border shadow-sm group hover:shadow-md transition-shadow">
+                <Package className="h-8 w-8 text-primary mb-4" />
+                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">My Orders</h3>
+                <p className="text-sm text-muted-foreground mb-6">View your order history and track active shipments.</p>
+                <Button variant="outline" className="w-full rounded-full" onClick={() => navigate('/orders')}>
+                  View Orders
+                </Button>
+              </div>
+              <div className="bg-card p-8 rounded-[2.5rem] border shadow-sm group hover:shadow-md transition-shadow">
+                <Store className="h-8 w-8 text-primary mb-4" />
+                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Seller Hub</h3>
+                <p className="text-sm text-muted-foreground mb-6">List your own products and manage your store.</p>
+                <Button variant="outline" className="w-full rounded-full" onClick={() => navigate('/sell')}>
+                  Go to Hub
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-secondary/20 p-8 rounded-[2.5rem] border border-dashed">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">Recent Activity</h3>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Updated just now</span>
+              </div>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-16 w-16 rounded-full bg-background flex items-center justify-center mb-4">
+                  <RefreshCcw className="h-6 w-6 text-muted-foreground opacity-20" />
+                </div>
+                <p className="text-sm font-medium text-muted-foreground">No recent activity to show.</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

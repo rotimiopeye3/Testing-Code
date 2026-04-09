@@ -7,14 +7,16 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { useSearchStore } from '@/store/useSearchStore';
 import { useAdminData } from '@/hooks/useAdminData';
+import { useAnimationStore } from '@/store/useAnimationStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Moon, Sun, Search, User, X, Megaphone, ShieldCheck, Heart } from 'lucide-react';
+import { Moon, Sun, Search, User, X, Megaphone, ShieldCheck, Heart, Play, Pause } from 'lucide-react';
 
 export function Navbar() {
   const { user } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const { query, setQuery } = useSearchStore();
+  const { particlesEnabled, toggleParticles } = useAnimationStore();
   const { announcements } = useAdminData();
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
@@ -89,6 +91,15 @@ export function Navbar() {
               </button>
             )}
           </div>
+
+          <button 
+            onClick={toggleParticles}
+            className="p-2 hover:bg-secondary rounded-full transition-colors"
+            aria-label="Toggle Particles"
+            title={particlesEnabled ? "Pause Particles" : "Play Particles"}
+          >
+            {particlesEnabled ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </button>
 
           <button 
             onClick={toggleTheme}

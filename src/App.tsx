@@ -4,6 +4,7 @@ import Providers from './components/Providers';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
+import { ParticlesBackground } from './components/common/ParticlesBackground';
 import { CartFlyAnimation } from './components/common/CartFlyAnimation';
 import { SupportWidget } from './components/common/SupportWidget';
 import { useThemeStore } from './store/useThemeStore';
@@ -38,6 +39,7 @@ export default function App() {
     <Providers>
       <Router>
         <ScrollToTop />
+        <ParticlesBackground />
         <div className="flex min-h-screen flex-col bg-background font-sans antialiased">
           <Navbar />
           <CartFlyAnimation />
